@@ -1,0 +1,130 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Progress Settings">
+  <div style="max-width: 720px; margin: 0 auto; padding: 2rem 1rem;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 2rem;">Progress Settings</h1>
+
+    <div id="status-card" style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
+      <h2 style="margin-top: 0;">Current Status</h2>
+      <p id="status-text" style="font-size: 1.125rem; font-weight: 500;">Checking status...</p>
+
+      <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+        <button id="btn-toggle" style="background: var(--color-brand-accent); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 600; cursor: pointer;">Enable Progress</button>
+        <button id="btn-clear" style="background: white; color: #EF4444; border: 1px solid #EF4444; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 600; cursor: pointer; display: none;">Clear All Progress</button>
+        <button id="btn-export" style="background: white; color: var(--color-brand-accent); border: 1px solid var(--color-brand-accent); padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 600; cursor: pointer; display: none;">Export (.json)</button>
+        <label id="btn-import-label" style="background: white; color: var(--color-brand-accent); border: 1px solid var(--color-brand-accent); padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 600; cursor: pointer; display: none; margin: 0;">
+          Import (.json)
+          <input type="file" id="btn-import" accept=".json" style="display: none;" />
+        </label>
+      </div>
+    </div>
+
+    <div style="margin-top: 3rem;">
+      <h2>Frequently Asked Questions</h2>
+
+      <details style="margin-bottom: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: 1rem;">
+        <summary style="font-weight: 600; cursor: pointer; font-size: 1.125rem;">What is saved?</summary>
+        <p style="margin-top: 1rem; color: var(--color-text-secondary);">We save a list of chapters you have opened and chapters you have marked as complete.</p>
+      </details>
+
+      <details style="margin-bottom: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: 1rem;">
+        <summary style="font-weight: 600; cursor: pointer; font-size: 1.125rem;">Where is it saved?</summary>
+        <p style="margin-top: 1rem; color: var(--color-text-secondary);">Progress is saved only in your browser's local storage on this specific device. It is never sent to a server.</p>
+      </details>
+
+      <details style="margin-bottom: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: 1rem;">
+        <summary style="font-weight: 600; cursor: pointer; font-size: 1.125rem;">How long is it kept?</summary>
+        <p style="margin-top: 1rem; color: var(--color-text-secondary);">Your progress will automatically expire and be deleted if you do not use the site for 12 months.</p>
+      </details>
+    </div>
+  </div>
+
+  <script>
+    import { getProgress, enableProgress, disableProgress, clearProgress } from '../scripts/progress';
+
+    const updateUI = () => {
+      const p = getProgress();
+      const text = document.getElementById('status-text');
+      const toggle = document.getElementById('btn-toggle');
+      const clear = document.getElementById('btn-clear');
+
+      if (!text || !toggle || !clear) return;
+
+      const exportBtn = document.getElementById('btn-export');
+      const importLabel = document.getElementById('btn-import-label');
+
+      if (p.enabled) {
+        text.textContent = `Progress saving is currently ON (${p.completedChapters.length} completed, ${p.openedChapters.length} opened).`;
+        toggle.textContent = 'Turn Off & Delete Progress';
+        toggle.style.background = 'white';
+        toggle.style.color = '#EF4444';
+        toggle.style.border = '1px solid #EF4444';
+        clear.style.display = 'block';
+        if (exportBtn) exportBtn.style.display = 'block';
+        if (importLabel) importLabel.style.display = 'block';
+      } else {
+        text.textContent = 'Progress saving is currently OFF.';
+        toggle.textContent = 'Enable Progress Saving';
+        toggle.style.background = 'var(--color-brand-accent)';
+        toggle.style.color = 'white';
+        toggle.style.border = 'none';
+        clear.style.display = 'none';
+        if (exportBtn) exportBtn.style.display = 'none';
+        if (importLabel) importLabel.style.display = 'none';
+      }
+    };
+
+    updateUI();
+    window.addEventListener('aerolearn:progress-updated', updateUI);
+
+    document.getElementById('btn-toggle')?.addEventListener('click', () => {
+      const p = getProgress();
+      if (p.enabled) {
+        if (confirm('Are you sure you want to turn off and delete all progress on this device?')) {
+          disableProgress();
+        }
+      } else {
+        enableProgress();
+      }
+    });
+
+    document.getElementById('btn-clear')?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all your progress? This will reset your stats to 0 but keep progress saving enabled.')) {
+        clearProgress();
+      }
+    });
+
+    import { saveProgress } from '../scripts/progress';
+
+    document.getElementById('btn-export')?.addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getProgress()));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "aerolearn-progress.json");
+      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    });
+
+    document.getElementById('btn-import')?.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e2) => {
+          try {
+            const result = JSON.parse(e2.target?.result as string);
+            if (result.enabled !== undefined) {
+              saveProgress(result);
+              alert('Progress imported successfully!');
+            }
+          } catch (err) {
+            alert('Invalid JSON file.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+  </script>
+</Layout>

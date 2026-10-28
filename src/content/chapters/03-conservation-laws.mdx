@@ -1,0 +1,94 @@
+---
+moduleSlug: "fluid-fundamentals"
+chapterNumber: 3
+title: "Conservation of Mass and Momentum: From Control Volumes to Bernoulli"
+summary: "Apply fundamental physics to flowing fluids to derive mass conservation and the Bernoulli equation."
+readingTimeMinutes: 12
+contentType: "Derivation"
+whereThisFits: "Now that we know what a fluid is and its properties, we apply Newton's laws to derive the equations that predict how it will move."
+learningObjectives:
+  - "Apply the continuity equation to 1D flow."
+  - "Derive the Bernoulli equation along a streamline."
+  - "Identify the restrictions on using the Bernoulli equation."
+---
+
+import WorkedExample from '../../components/mdx/WorkedExample.astro';
+import WatchOut from '../../components/mdx/WatchOut.astro';
+import MediaFigure from '../../components/mdx/MediaFigure.astro';
+import Recap from '../../components/mdx/Recap.astro';
+import CheckUnderstanding from '../../components/mdx/CheckUnderstanding.astro';
+import Question from '../../components/mdx/Question.astro';
+import ActionStep from '../../components/mdx/ActionStep.astro';
+
+## Conservation of Mass (Continuity Equation)
+
+Mass can neither be created nor destroyed. For a steady, one-dimensional flow through a streamtube or pipe, the mass flow rate ($\dot{m}$) must be constant at every cross-section.
+
+$$
+\dot{m} = \rho_1 A_1 V_1 = \rho_2 A_2 V_2 = \text{constant}
+$$
+
+If the flow is **incompressible** (density $\rho$ is constant), this simplifies to the volumetric flow rate:
+
+$$
+A_1 V_1 = A_2 V_2
+$$
+
+<MediaFigure src="/media/diagrams/venturi.svg" alt="Venturi Tube" caption="As the area decreases, the velocity must increase to conserve mass." />
+
+## Conservation of Momentum (Euler to Bernoulli)
+
+Applying Newton's Second Law ($F = ma$) to a fluid particle moving along a streamline, and assuming the flow is **steady, inviscid (frictionless), and incompressible**, we can integrate Euler's equation to yield the famous **Bernoulli Equation**:
+
+$$
+p + \frac{1}{2}\rho V^2 + \rho g z = \text{constant along a streamline}
+$$
+
+- $p$: Static pressure
+- $\frac{1}{2}\rho V^2$: Dynamic pressure
+- $\rho g z$: Hydrostatic pressure
+
+<WatchOut title="Bernoulli Restrictions">
+Never apply Bernoulli's equation blindly! It is ONLY valid for:
+1. Steady flow
+2. Incompressible flow ($Ma < 0.3$)
+3. Inviscid flow (no friction/viscosity)
+4. Along a single streamline (unless the flow is irrotational)
+</WatchOut>
+
+<WorkedExample title="Venturi Velocity">
+Water ($\rho = 1000 \text{ kg/m}^3$) flows horizontally through a Venturi tube. At point 1, $A_1 = 0.1 \text{ m}^2$ and $V_1 = 2 \text{ m/s}$. At point 2, $A_2 = 0.05 \text{ m}^2$. What is the pressure difference $p_1 - p_2$?
+
+**Step 1: Find $V_2$ using Continuity**
+$$
+V_2 = V_1 \frac{A_1}{A_2} = 2 \left( \frac{0.1}{0.05} \right) = 4 \text{ m/s}
+$$
+
+**Step 2: Find pressure diff using Bernoulli (horizontal, so $z_1 = z_2$)**
+$$
+p_1 + \frac{1}{2}\rho V_1^2 = p_2 + \frac{1}{2}\rho V_2^2
+$$
+$$
+p_1 - p_2 = \frac{1}{2}\rho (V_2^2 - V_1^2) = \frac{1}{2}(1000)(4^2 - 2^2) = 500(16 - 4) = 6000 \text{ Pa}
+$$
+</WorkedExample>
+
+<Recap>
+- Mass flow rate $\dot{m} = \rho A V$ is constant for 1D steady flow.
+- For incompressible flow, velocity increases as area decreases.
+- The Bernoulli equation relates pressure, velocity, and elevation.
+- Bernoulli is restricted to steady, incompressible, inviscid flow along a streamline.
+</Recap>
+
+<CheckUnderstanding>
+  <Question prompt="If water flows into a nozzle that halves in area, what happens to the velocity?">
+    Because water is essentially incompressible, the velocity must double to conserve mass flow rate ($A_1 V_1 = A_2 V_2$).
+  </Question>
+  <Question prompt="Can you use Bernoulli's equation to find the pressure across a shockwave at Mach 2?">
+    No. A shockwave involves highly compressible, viscous, and non-isentropic effects. Bernoulli's equation assumes incompressible, inviscid flow.
+  </Question>
+</CheckUnderstanding>
+
+<ActionStep>
+Grab a piece of paper and hold it horizontally just below your lower lip. Blow air rapidly over the top surface. The paper will rise! Use the Bernoulli equation to explain why this happens.
+</ActionStep>

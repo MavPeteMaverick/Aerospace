@@ -1,0 +1,98 @@
+---
+moduleSlug: "fluid-fundamentals"
+chapterNumber: 2
+title: "The Three Pillars of State: Density, Pressure, and Viscosity"
+summary: "Define and relate the primary thermodynamic properties used in aerodynamic analysis."
+readingTimeMinutes: 10
+contentType: "Reading"
+whereThisFits: "Having established the continuum assumption, we now define the macroscopic properties we will track at every point in the flow field."
+learningObjectives:
+  - "Define density and pressure mathematically."
+  - "Understand the difference between dynamic and kinematic viscosity."
+  - "Apply Sutherland's Law to predict gas viscosity changes with temperature."
+---
+
+import WorkedExample from '../../components/mdx/WorkedExample.astro';
+import WatchOut from '../../components/mdx/WatchOut.astro';
+import MediaFigure from '../../components/mdx/MediaFigure.astro';
+import Recap from '../../components/mdx/Recap.astro';
+import CheckUnderstanding from '../../components/mdx/CheckUnderstanding.astro';
+import Question from '../../components/mdx/Question.astro';
+import ActionStep from '../../components/mdx/ActionStep.astro';
+
+## Density and Pressure
+
+At every point in a continuous fluid field, we can define properties.
+
+**Density ($\rho$)** is mass per unit volume:
+$$
+\rho = \lim_{\delta \mathcal{V} \to \delta \mathcal{V}^*} \frac{\delta m}{\delta \mathcal{V}}
+$$
+where $\delta \mathcal{V}^*$ is the smallest volume where the continuum assumption still holds.
+
+**Pressure ($p$)** is the normal force per unit area exerted by the fluid:
+$$
+p = \lim_{\delta A \to 0} \frac{\delta F_n}{\delta A}
+$$
+
+## Viscosity
+
+Viscosity is a measure of a fluid's resistance to deformation (its "thickness" or internal friction).
+
+- **Dynamic Viscosity ($\mu$)**: The proportionality constant relating shear stress ($\tau$) to the velocity gradient ($du/dy$) in a Newtonian fluid: $\tau = \mu \frac{du}{dy}$.
+- **Kinematic Viscosity ($\nu$)**: The ratio of dynamic viscosity to density:
+$$
+\nu = \frac{\mu}{\rho}
+$$
+Kinematic viscosity is often interpreted as the diffusivity of momentum.
+
+### Temperature Dependence (Sutherland's Law)
+
+<WatchOut title="Liquids vs. Gases">
+In **liquids**, viscosity *decreases* as temperature increases (think of heating up syrup).
+In **gases** (like air), viscosity *increases* as temperature increases because higher thermal energy means more molecular collisions transferring momentum between layers.
+</WatchOut>
+
+For air, we calculate dynamic viscosity at a given temperature $T$ using **Sutherland's Law**:
+
+$$
+\mu = \mu_{ref} \left( \frac{T}{T_{ref}} \right)^{3/2} \frac{T_{ref} + S}{T + S}
+$$
+
+Where for air:
+- $\mu_{ref} = 1.716 \times 10^{-5} \text{ kg/(m}\cdot\text{s)}$
+- $T_{ref} = 273.15 \text{ K}$
+- $S = 110.4 \text{ K}$
+
+<WorkedExample title="Viscosity at High Temp">
+Calculate the dynamic viscosity of air at a stagnation temperature of $400 \text{ K}$.
+
+Using Sutherland's law:
+$$
+\mu = 1.716 \times 10^{-5} \left( \frac{400}{273.15} \right)^{3/2} \frac{273.15 + 110.4}{400 + 110.4}
+$$
+$$
+\mu \approx 2.3 \times 10^{-5} \text{ kg/(m}\cdot\text{s)}
+$$
+</WorkedExample>
+
+<Recap>
+- Density ($\rho$) is mass per volume.
+- Pressure ($p$) is normal force per area.
+- Dynamic viscosity ($\mu$) relates shear stress to velocity gradients.
+- Kinematic viscosity ($\nu = \mu/\rho$) relates to momentum diffusion.
+- Gas viscosity increases with temperature (Sutherland's Law), while liquid viscosity decreases.
+</Recap>
+
+<CheckUnderstanding>
+  <Question prompt="What is the difference between dynamic and kinematic viscosity?">
+    Dynamic viscosity ($\mu$) represents internal friction. Kinematic viscosity ($\nu = \mu/\rho$) also incorporates density and represents the diffusion rate of momentum in the fluid.
+  </Question>
+  <Question prompt="If you heat up a tank of water and a tank of air, what happens to their respective viscosities?">
+    The water's viscosity will decrease, while the air's viscosity will increase.
+  </Question>
+</CheckUnderstanding>
+
+<ActionStep>
+Write a simple Python script to plot Sutherland's Law for air from 200 K to 1000 K.
+</ActionStep>

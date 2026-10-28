@@ -1,0 +1,94 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const modules = await getCollection('modules');
+  return modules.map(m => ({
+    params: { moduleSlug: m.data.id },
+    props: { module: m },
+  }));
+}
+
+const { module } = Astro.props;
+const chapters = await getCollection('chapters');
+const modChapters = chapters.filter(c => c.data.moduleSlug === module.data.id).sort((a, b) => a.data.chapterNumber - b.data.chapterNumber);
+const totalTime = modChapters.reduce((acc, curr) => acc + curr.data.readingTimeMinutes, 0);
+---
+
+<Layout title={module.data.title}>
+  <div style="max-width: 900px; margin: 0 auto; padding: 2rem 1rem;">
+    <nav style="font-size: 0.875rem; margin-bottom: 2rem; color: var(--color-text-secondary);">
+      <a href="/">Home</a> > <a href="/learn">Learn</a> > {module.data.title}
+    </nav>
+
+    <header style="margin-bottom: 3rem;">
+      <div style="font-size: 0.875rem; color: var(--color-brand-accent); font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase;">{module.data.eyebrow}</div>
+      <h1 style="font-size: 2.5rem; margin-bottom: 1.5rem; margin-top: 0;">{module.data.title}</h1>
+      <p style="font-size: 1.125rem; color: var(--color-text-secondary); max-width: 720px; line-height: 1.6; margin-bottom: 2rem;">{module.data.description}</p>
+
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <span style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem;">{modChapters.length} Chapters</span>
+        <span style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem;">{totalTime} minutes total</span>
+        <span id="module-completed-stat" style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; display: none;"></span>
+      </div>
+    </header>
+
+    <section>
+      <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--color-border); padding-bottom: 0.5rem;">Syllabus</h2>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {modChapters.map((chapter) => {
+          const slug = chapter.slug.split('/').pop() || chapter.slug;
+          return (
+            <a href={`/modules/${module.data.id}/${slug}`} data-chapter-id={`${module.data.id}/${slug}`} class="chapter-row" style="display: flex; gap: 1.5rem; padding: 1.5rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: inherit; transition: border-color 0.2s, box-shadow 0.2s;">
+              <div style="font-size: 2rem; font-weight: 700; color: var(--color-border); width: 40px; text-align: right;">{chapter.data.chapterNumber}</div>
+              <div style="flex: 1;">
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">{chapter.data.title}</h3>
+                <p style="margin: 0 0 1rem 0; color: var(--color-text-secondary); font-size: 0.875rem;">{chapter.data.summary}</p>
+                <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.75rem; color: var(--color-text-secondary);">
+                  <span style="background: var(--color-bg); padding: 0.25rem 0.5rem; border-radius: 4px;">{chapter.data.contentType}</span>
+                  <span>{chapter.data.readingTimeMinutes} mins</span>
+                  <span class="chapter-status" style="margin-left: auto; font-weight: 500;">Not started</span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  </div>
+
+  <script>
+    import { getProgress } from '../../scripts/progress';
+
+    const updateUI = () => {
+      const p = getProgress();
+      if (!p.enabled) return;
+
+      let completedCount = 0;
+      document.querySelectorAll('.chapter-row').forEach(row => {
+        const id = row.getAttribute('data-chapter-id');
+        const statusEl = row.querySelector('.chapter-status');
+        if (id && statusEl) {
+          if (p.completedChapters.includes(id)) {
+            statusEl.textContent = 'Completed';
+            statusEl.style.color = '#10B981'; // emerald-500
+            completedCount++;
+          } else if (p.openedChapters.includes(id)) {
+            statusEl.textContent = 'Opened';
+            statusEl.style.color = 'var(--color-brand-accent)';
+          }
+        }
+      });
+
+      const stat = document.getElementById('module-completed-stat');
+      if (stat) {
+        stat.style.display = 'inline-block';
+        stat.textContent = `${completedCount} completed`;
+      }
+    };
+
+    updateUI();
+    window.addEventListener('aerolearn:progress-updated', updateUI);
+  </script>
+</Layout>

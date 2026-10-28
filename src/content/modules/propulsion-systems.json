@@ -1,0 +1,9 @@
+{
+  "id": "propulsion-systems",
+  "moduleNumber": 3,
+  "title": "Airbreathing & Rocket Propulsion",
+  "eyebrow": "Module 3 · Generating Thrust",
+  "summary": "Dive into the thermodynamic cycles and control volume analyses used to design jet engines and rocket motors.",
+  "description": "How do we generate the immense thrust required for flight and space exploration? This module applies conservation laws to propulsion systems, breaking down the mechanics of turbojets, turbofans, scramjets, and chemical rockets.",
+  "order": 3
+}

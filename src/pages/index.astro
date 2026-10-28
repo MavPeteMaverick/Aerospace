@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Home">
+  <section style="text-align: center; padding: 4rem 1rem; background-color: var(--color-brand-primary); color: white;">
+    <h1 style="color: white; font-size: 3rem; margin-bottom: 1rem;">Master Aerospace Engineering</h1>
+    <p style="font-size: 1.25rem; max-width: 600px; margin: 0 auto 2rem;">First-Principles Aerospace Engineering. One Concept at a Time.</p>
+    <a href="/learn" style="display: inline-block; background: var(--color-brand-accent); color: white; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.125rem;">Start Learning</a>
+  </section>
+
+  <section class="chapter-prose" style="max-width: 900px; padding-top: 4rem;">
+    <h2>Featured Modules</h2>
+    <div style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 2rem;">
+      <a href="/modules/fluid-fundamentals" style="display: block; padding: 1.5rem; border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: inherit; transition: transform 0.2s; background: var(--color-surface);">
+        <h3 style="margin-top: 0; font-size: 1.25rem;">Fluid Mechanics & The Continuum</h3>
+        <p style="color: var(--color-text-secondary); margin-bottom: 0;">Module 1</p>
+      </a>
+      <a href="/modules/compressible-flow" style="display: block; padding: 1.5rem; border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: inherit; transition: transform 0.2s; background: var(--color-surface);">
+        <h3 style="margin-top: 0; font-size: 1.25rem;">High-Speed & Compressible Aerodynamics</h3>
+        <p style="color: var(--color-text-secondary); margin-bottom: 0;">Module 2</p>
+      </a>
+      <a href="/modules/propulsion-systems" style="display: block; padding: 1.5rem; border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: inherit; transition: transform 0.2s; background: var(--color-surface);">
+        <h3 style="margin-top: 0; font-size: 1.25rem;">Airbreathing & Rocket Propulsion</h3>
+        <p style="color: var(--color-text-secondary); margin-bottom: 0;">Module 3</p>
+      </a>
+    </div>
+  </section>
+</Layout>

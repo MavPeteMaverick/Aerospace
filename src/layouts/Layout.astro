@@ -1,0 +1,120 @@
+---
+import '../styles/global.css';
+import 'katex/dist/katex.min.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="AeroLearn: First-Principles Aerospace Engineering" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} | AeroLearn</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // Apply saved text size and theme
+      const savedSize = localStorage.getItem('aerolearn_text_size');
+      if (savedSize) document.documentElement.style.setProperty('--text-base-size', savedSize);
+
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <div class="utility-bar no-print">
+      <a href="/formula-sheet">Formula Sheet</a>
+      <a href="/isa-calculator">ISA Calculator</a>
+      <a href="/progress-settings">Progress Settings</a>
+      <div role="group" aria-label="Text size" class="text-size-controls">
+        <button id="text-size-sm">A-</button>
+        <button id="text-size-md">A</button>
+        <button id="text-size-lg">A+</button>
+      </div>
+      <button id="theme-toggle">Theme</button>
+    </div>
+    <header class="no-print" style="padding: 1rem 2rem; background: var(--color-brand-primary); color: white; display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" style="color: white; text-decoration: none; font-size: 1.5rem; font-weight: 700;">AeroLearn</a>
+      <nav style="display: flex; gap: 1.5rem;">
+        <a href="/learn" style="color: white; text-decoration: none;">Start Learning</a>
+        <a href="/media-library" style="color: white; text-decoration: none;">Visual Library</a>
+        <a href="/notes" style="color: white; text-decoration: none;">Articles & Notes</a>
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+
+    <div id="consent-banner" class="no-print" style="display: none; position: fixed; bottom: 1rem; right: 1rem; max-width: 400px; background: var(--color-surface); border: 1px solid var(--color-border); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); z-index: 50;">
+      <p style="margin-top: 0; margin-bottom: 1rem; font-size: 0.875rem;">Want to track your learning progress on this device? Progress is saved only in your browser and never sent to any server.</p>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="btn-consent-yes" style="background: var(--color-brand-accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 500; cursor: pointer; font-size: 0.875rem;">Enable Progress Saving</button>
+        <button id="btn-consent-no" style="background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); padding: 0.5rem 1rem; border-radius: 4px; font-weight: 500; cursor: pointer; font-size: 0.875rem;">No thanks</button>
+      </div>
+    </div>
+
+    <script>
+      import { getProgress, enableProgress } from '../scripts/progress';
+
+      const checkConsent = () => {
+        const p = getProgress();
+        const banner = document.getElementById('consent-banner');
+        const dismissed = localStorage.getItem('aerolearn_consent_dismissed');
+
+        if (!p.enabled && !dismissed && banner) {
+          banner.style.display = 'block';
+        } else if (banner) {
+          banner.style.display = 'none';
+        }
+      };
+
+      document.getElementById('btn-consent-yes')?.addEventListener('click', () => {
+        enableProgress();
+        const banner = document.getElementById('consent-banner');
+        if (banner) banner.style.display = 'none';
+      });
+
+      document.getElementById('btn-consent-no')?.addEventListener('click', () => {
+        localStorage.setItem('aerolearn_consent_dismissed', 'true');
+        const banner = document.getElementById('consent-banner');
+        if (banner) banner.style.display = 'none';
+      });
+
+      checkConsent();
+      window.addEventListener('aerolearn:progress-updated', checkConsent);
+    </script>
+    <footer class="no-print" style="padding: 2rem; text-align: center; border-top: 1px solid var(--color-border); margin-top: 4rem;">
+      <p>&copy; 2024 AeroLearn.</p>
+    </footer>
+    <script>
+      // Text size logic
+      const setSize = (size: string) => {
+        document.documentElement.style.setProperty('--text-base-size', size);
+        localStorage.setItem('aerolearn_text_size', size);
+      };
+      document.getElementById('text-size-sm')?.addEventListener('click', () => setSize('90%'));
+      document.getElementById('text-size-md')?.addEventListener('click', () => setSize('100%'));
+      document.getElementById('text-size-lg')?.addEventListener('click', () => setSize('115%'));
+
+      // Theme logic
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          document.documentElement.classList.toggle('dark');
+          const isDark = document.documentElement.classList.contains('dark');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+      }
+    </script>
+  </body>
+</html>

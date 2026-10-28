@@ -1,0 +1,9 @@
+{
+  "id": "compressible-flow",
+  "moduleNumber": 2,
+  "title": "High-Speed & Compressible Aerodynamics",
+  "eyebrow": "Module 2 · Breaking the Sound Barrier",
+  "summary": "Explore what happens when flight speeds exceed the speed of sound, introducing Mach numbers, shockwaves, and compressible flows.",
+  "description": "At low speeds, air behaves like water—incompressible. But as you approach the speed of sound, density changes dramatically, leading to shockwaves, expansion fans, and aerodynamic heating. This module covers the physics of compressible flow, Mach numbers, and supersonic design principles.",
+  "order": 2
+}

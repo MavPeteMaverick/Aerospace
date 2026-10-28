@@ -1,0 +1,15 @@
+---
+export interface Props {
+  prompt: string;
+}
+const { prompt } = Astro.props;
+---
+<li style="margin-bottom: 1.5rem;">
+  <p style="font-weight: 500;">{prompt}</p>
+  <details style="background: var(--color-bg); padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--color-border);">
+    <summary style="cursor: pointer; font-weight: 500; color: var(--color-brand-accent);">Show answer</summary>
+    <div class="answer-body" style="margin-top: 1rem;">
+      <slot />
+    </div>
+  </details>
+</li>

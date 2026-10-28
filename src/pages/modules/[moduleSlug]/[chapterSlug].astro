@@ -1,0 +1,127 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+import ObjectivesBox from '../../../components/mdx/ObjectivesBox.astro';
+import WorkedExample from '../../../components/mdx/WorkedExample.astro';
+import WatchOut from '../../../components/mdx/WatchOut.astro';
+import MediaFigure from '../../../components/mdx/MediaFigure.astro';
+import Recap from '../../../components/mdx/Recap.astro';
+import CheckUnderstanding from '../../../components/mdx/CheckUnderstanding.astro';
+import Question from '../../../components/mdx/Question.astro';
+import ActionStep from '../../../components/mdx/ActionStep.astro';
+
+
+export async function getStaticPaths() {
+  const chapters = await getCollection('chapters');
+  const modules = await getCollection('modules');
+
+  return chapters.map(chapter => {
+    const mod = modules.find(m => m.data.id === chapter.data.moduleSlug);
+    const slug = chapter.slug.split('/').pop() || chapter.slug;
+    return {
+      params: { moduleSlug: chapter.data.moduleSlug, chapterSlug: slug },
+      props: { chapter, module: mod, allChapters: chapters.filter(c => c.data.moduleSlug === chapter.data.moduleSlug) },
+    };
+  });
+}
+
+const { chapter, module, allChapters } = Astro.props;
+const { Content } = await chapter.render();
+
+allChapters.sort((a, b) => a.data.chapterNumber - b.data.chapterNumber);
+const currentIndex = allChapters.findIndex(c => c.slug === chapter.slug);
+const prev = currentIndex > 0 ? allChapters[currentIndex - 1] : null;
+const next = currentIndex < allChapters.length - 1 ? allChapters[currentIndex + 1] : null;
+
+const prevUrl = prev ? `/modules/${module?.data.id}/${prev.slug.split('/').pop()}` : `/modules/${module?.data.id}`;
+const nextUrl = next ? `/modules/${module?.data.id}/${next.slug.split('/').pop()}` : null;
+---
+
+<Layout title={`${chapter.data.title} | ${module?.data.title}`}>
+  <div style="max-width: 900px; margin: 0 auto; padding: 2rem 1rem;">
+    <nav style="font-size: 0.875rem; margin-bottom: 2rem; color: var(--color-text-secondary);">
+      <a href="/">Home</a> > <a href="/learn">Learn</a> > <a href={`/modules/${module?.data.id}`}>{module?.data.title}</a> > Chapter {chapter.data.chapterNumber}
+    </nav>
+
+    <header style="margin-bottom: 3rem; text-align: center;">
+      <div style="font-weight: 600; color: var(--color-brand-accent); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Module {module?.data.moduleNumber} · Chapter {chapter.data.chapterNumber}</div>
+      <h1 style="font-size: 2.5rem; margin-bottom: 1.5rem; max-width: 800px; margin-inline: auto;">{chapter.data.title}</h1>
+      <div style="display: flex; gap: 0.5rem; justify-content: center;">
+        <span style="background: var(--color-bg); padding: 0.25rem 0.75rem; border-radius: 9999px; border: 1px solid var(--color-border); font-size: 0.875rem;">{chapter.data.contentType}</span>
+        <span style="background: var(--color-bg); padding: 0.25rem 0.75rem; border-radius: 9999px; border: 1px solid var(--color-border); font-size: 0.875rem;">{chapter.data.readingTimeMinutes} minutes</span>
+      </div>
+    </header>
+
+    <article class="chapter-prose">
+      <ObjectivesBox whereThisFits={chapter.data.whereThisFits} objectives={chapter.data.learningObjectives} />
+
+      <div class="mdx-content" style="margin-top: 2rem;">
+        <Content components={{ WorkedExample, WatchOut, MediaFigure, Recap, CheckUnderstanding, Question, ActionStep, ObjectivesBox }} />
+      </div>
+
+      <div style="margin-top: 4rem; padding: 2rem; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="margin-top: 0; margin-bottom: 0.5rem;">Finished this chapter?</h3>
+            <p id="progress-msg" style="margin: 0; font-size: 0.875rem; color: var(--color-text-secondary);">Your progress is saved locally on this device.</p>
+          </div>
+          <button id="btn-complete" data-chapter-id={`${module?.data.id}/${chapter.slug.split('/').pop()}`} style="background: white; border: 2px solid var(--color-brand-accent); color: var(--color-brand-accent); padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.2s;">
+            Mark as complete
+          </button>
+        </div>
+      </div>
+
+      <nav style="display: flex; justify-content: space-between; margin-top: 2rem;">
+        <a href={prevUrl} style="padding: 1rem; border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: inherit; flex: 1; max-width: 48%;">
+          <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 0.25rem;">Previous</div>
+          <div style="font-weight: 500;">{prev ? prev.data.title : 'Module overview'}</div>
+        </a>
+        {nextUrl && (
+          <a href={nextUrl} style="padding: 1rem; border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: inherit; flex: 1; max-width: 48%; text-align: right;">
+            <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 0.25rem;">Next</div>
+            <div style="font-weight: 500;">{next.data.title}</div>
+          </a>
+        )}
+      </nav>
+    </article>
+  </div>
+
+  <script>
+    import { getProgress, markChapterCompleted, markChapterOpened } from '../../../scripts/progress';
+
+    const btn = document.getElementById('btn-complete');
+    if (btn) {
+      const chapterId = btn.getAttribute('data-chapter-id');
+      if (chapterId) {
+        // Mark as opened
+        markChapterOpened(chapterId);
+
+        // Setup button UI
+        const updateBtn = () => {
+          const p = getProgress();
+          if (p.completedChapters.includes(chapterId)) {
+            btn.innerHTML = '✓ Completed';
+            btn.style.background = 'var(--color-brand-accent)';
+            btn.style.color = 'white';
+            const msg = document.getElementById('progress-msg');
+            if (msg) msg.textContent = "Saved on this device. Your progress is not shared with anyone.";
+          } else {
+            btn.innerHTML = 'Mark as complete';
+            btn.style.background = 'white';
+            btn.style.color = 'var(--color-brand-accent)';
+          }
+        };
+
+        updateBtn();
+        window.addEventListener('aerolearn:progress-updated', updateBtn);
+
+        btn.addEventListener('click', () => {
+          const p = getProgress();
+          const isComplete = p.completedChapters.includes(chapterId);
+          markChapterCompleted(chapterId, !isComplete);
+        });
+      }
+    }
+  </script>
+</Layout>

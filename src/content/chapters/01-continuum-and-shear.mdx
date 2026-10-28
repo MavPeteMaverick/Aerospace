@@ -1,0 +1,88 @@
+---
+moduleSlug: "fluid-fundamentals"
+chapterNumber: 1
+title: "What Makes a Fluid Flow: Shear Stress & The Continuum Hypothesis"
+summary: "Understand why fluids deform continuously and when the continuum assumption holds true."
+readingTimeMinutes: 8
+contentType: "Reading"
+whereThisFits: "This is the foundational chapter where we define what a fluid actually is, setting the stage for all aerodynamic analysis."
+learningObjectives:
+  - "Distinguish between solid and fluid deformation under shear stress."
+  - "Define the continuum hypothesis in fluid mechanics."
+  - "Calculate and interpret the Knudsen number for different flight regimes."
+---
+
+import WorkedExample from '../../components/mdx/WorkedExample.astro';
+import WatchOut from '../../components/mdx/WatchOut.astro';
+import MediaFigure from '../../components/mdx/MediaFigure.astro';
+import Recap from '../../components/mdx/Recap.astro';
+import CheckUnderstanding from '../../components/mdx/CheckUnderstanding.astro';
+import Question from '../../components/mdx/Question.astro';
+import ActionStep from '../../components/mdx/ActionStep.astro';
+
+## What is a Fluid?
+
+In mechanics, the distinction between a solid and a fluid lies in how they respond to **shear stress**.
+
+A solid deforms by a finite amount when subjected to a shear stress, and when the stress is removed, it (typically) returns to its original shape. A fluid, however, **deforms continuously** as long as the shear stress is applied, no matter how small that stress is.
+
+<MediaFigure src="/media/diagrams/shear-stress.svg" alt="Solid vs Fluid under shear stress" caption="A solid deforms by a finite angle, while a fluid flows continuously." />
+
+## The Continuum Hypothesis
+
+Air is made of discrete molecules bouncing around. However, in most aerospace applications, we don't track individual molecules. Instead, we treat the fluid as a **continuum**—a continuous distribution of matter.
+
+This assumption is valid as long as the characteristic length of our vehicle ($L$) is much larger than the **mean free path** ($\lambda$) of the fluid molecules (the average distance a molecule travels before colliding with another).
+
+### The Knudsen Number
+
+We quantify this regime using the **Knudsen number** ($Kn$):
+
+$$
+Kn = \frac{\lambda}{L}
+$$
+
+- **$Kn < 0.01$**: Continuum flow (Navier-Stokes equations apply)
+- **$0.01 < Kn < 0.1$**: Slip flow
+- **$0.1 < Kn < 10$**: Transition flow
+- **$Kn > 10$**: Free molecular flow (particle-based methods required)
+
+<WorkedExample title="Knudsen Number at Altitude">
+Let's compare a 1-meter characteristic length ($L = 1 \text{ m}$) at sea level versus 120 km altitude.
+
+**At sea level:**
+- Mean free path $\lambda \approx 68 \text{ nm} = 6.8 \times 10^{-8} \text{ m}$
+- $Kn = \frac{6.8 \times 10^{-8}}{1} = 6.8 \times 10^{-8}$
+- Since $Kn \ll 0.01$, the continuum assumption is extremely valid.
+
+**At 120 km altitude:**
+- Mean free path $\lambda \approx 3.7 \text{ m}$
+- $Kn = \frac{3.7}{1} = 3.7$
+- Since $Kn > 0.1$, the continuum assumption breaks down completely! This is the transition regime.
+</WorkedExample>
+
+<WatchOut title="Hypersonic Re-entry">
+Spacecraft re-entering the atmosphere experience extreme changes in Knudsen number. As they descend from the thin upper atmosphere (free molecular flow) down into the denser layers (continuum flow), engineers must switch between completely different mathematical models to predict heating and aerodynamics.
+</WatchOut>
+
+<Recap>
+- A fluid deforms continuously under any applied shear stress.
+- The continuum hypothesis treats a fluid as a continuous substance rather than discrete molecules.
+- The Knudsen number ($Kn = \lambda / L$) determines if the continuum assumption is valid.
+</Recap>
+
+<CheckUnderstanding>
+  <Question prompt="If you apply a tiny, constant shear force to a block of steel, what happens over time?">
+    The steel will deform by a small, finite amount and stop deforming. It will not flow continuously.
+  </Question>
+  <Question prompt="What does a Knudsen number of 0.001 indicate?">
+    It indicates that the mean free path of the molecules is 1000 times smaller than the characteristic length. The continuum assumption is highly valid.
+  </Question>
+  <Question prompt="Why can't we use standard aerodynamic equations (Navier-Stokes) for a satellite in low Earth orbit (e.g., 400 km altitude)?">
+    At 400 km, the atmosphere is extremely sparse (very large mean free path), leading to a high Knudsen number ($Kn \gg 10$). The continuum hypothesis breaks down, and the air behaves as individual discrete particles.
+  </Question>
+</CheckUnderstanding>
+
+<ActionStep>
+Think about a vehicle you want to design. Estimate its characteristic length (e.g., chord length of a wing). Look up the mean free path of air at your intended flight altitude and calculate your expected Knudsen number.
+</ActionStep>

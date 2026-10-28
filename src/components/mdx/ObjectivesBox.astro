@@ -1,0 +1,15 @@
+---
+export interface Props {
+  whereThisFits: string;
+  objectives: string[];
+}
+
+const { whereThisFits, objectives } = Astro.props;
+---
+<div class="callout" style="background-color: var(--color-obj-bg); border-left: 2px solid var(--color-obj-border);">
+  <p><strong>Where this fits:</strong> {whereThisFits}</p>
+  <h2>By the end of this chapter you will be able to:</h2>
+  <ul>
+    {objectives.map((obj) => <li>{obj}</li>)}
+  </ul>
+</div>

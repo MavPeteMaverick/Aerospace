@@ -1,0 +1,116 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const modules = await getCollection('modules');
+modules.sort((a, b) => a.data.order - b.data.order);
+
+const chapters = await getCollection('chapters');
+---
+
+<Layout title="Core Modules">
+  <div style="max-width: 900px; margin: 0 auto; padding: 2rem 1rem;">
+    <nav style="font-size: 0.875rem; margin-bottom: 2rem; color: var(--color-text-secondary);">
+      <a href="/">Home</a> > Learn
+    </nav>
+
+    <h1 style="font-size: 2.5rem; margin-bottom: 2rem;">Core Modules, one step at a time</h1>
+
+    <div id="global-progress" style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 1.5rem; border-radius: 8px; margin-bottom: 3rem; display: none;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; align-items: center;">
+        <span style="font-weight: 600;">Your Learning Progress</span>
+        <a href="/progress-settings" style="font-size: 0.875rem;">Manage settings</a>
+      </div>
+      <div style="background: var(--color-border); height: 8px; border-radius: 4px; overflow: hidden;">
+        <div id="global-progress-bar" style="background: var(--color-brand-accent); height: 100%; width: 0%; transition: width 0.3s ease;" role="progressbar"></div>
+      </div>
+      <p id="global-progress-text" style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.5rem; margin-bottom: 0;">0 of {chapters.length} chapters completed</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+      {modules.map(mod => {
+        const modChapters = chapters.filter(c => c.data.moduleSlug === mod.data.id);
+        const totalTime = modChapters.reduce((acc, curr) => acc + curr.data.readingTimeMinutes, 0);
+        return (
+          <a href={`/modules/${mod.data.id}`} class="module-card" data-module-id={mod.data.id} style="display: block; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 2rem; text-decoration: none; color: inherit; transition: box-shadow 0.2s, border-color 0.2s;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+              <div>
+                <div style="font-size: 0.875rem; color: var(--color-brand-accent); font-weight: 600; margin-bottom: 0.5rem;">{mod.data.eyebrow}</div>
+                <h2 style="margin: 0; font-size: 1.75rem;">{mod.data.title}</h2>
+              </div>
+              <div class="module-status" style="font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background: var(--color-bg); border: 1px solid var(--color-border);">Not started</div>
+            </div>
+            <p style="color: var(--color-text-secondary); font-size: 1.125rem; margin-bottom: 1.5rem;">{mod.data.summary}</p>
+            <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: var(--color-text-secondary);">
+              <span>{modChapters.length} chapters</span>
+              <span>•</span>
+              <span>{totalTime} mins</span>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+  <script define:vars={{ totalChapters: chapters.length, moduleChapters: modules.map(m => ({ id: m.data.id, count: chapters.filter(c => c.data.moduleSlug === m.data.id).length })) }}>
+    const getProgress = () => {
+      try {
+        const raw = localStorage.getItem('aerolearn_progress_v1');
+        if (!raw) return { enabled: false, completedChapters: [], openedChapters: [] };
+        return JSON.parse(raw);
+      } catch (e) {
+        return { enabled: false, completedChapters: [], openedChapters: [] };
+      }
+    };
+
+    const updateUI = () => {
+      const p = getProgress();
+
+      const globalProgress = document.getElementById('global-progress');
+      const bar = document.getElementById('global-progress-bar');
+      const text = document.getElementById('global-progress-text');
+
+      if (!p.enabled) {
+        if (globalProgress) globalProgress.style.display = 'none';
+      } else {
+        if (globalProgress) {
+          globalProgress.style.display = 'block';
+          const completed = p.completedChapters.length;
+          const percent = totalChapters > 0 ? (completed / totalChapters) * 100 : 0;
+          if (bar) bar.style.width = `${percent}%`;
+          if (text) text.textContent = `${completed} of ${totalChapters} chapters completed`;
+        }
+      }
+
+      document.querySelectorAll('.module-card').forEach(card => {
+        const modId = card.getAttribute('data-module-id');
+        const statusEl = card.querySelector('.module-status');
+        const mod = moduleChapters.find(m => m.id === modId);
+
+        if (mod && statusEl && p.enabled) {
+          const modCompleted = p.completedChapters.filter(c => c.startsWith(modId + '/')).length;
+          const modOpened = p.openedChapters.filter(c => c.startsWith(modId + '/')).length;
+
+          if (modCompleted === mod.count && mod.count > 0) {
+            statusEl.textContent = 'Completed';
+            statusEl.style.background = '#ECFDF5';
+            statusEl.style.color = '#059669';
+            statusEl.style.borderColor = '#A7F3D0';
+          } else if (modOpened > 0 || modCompleted > 0) {
+            statusEl.textContent = `In progress · ${modCompleted}/${mod.count} done`;
+            statusEl.style.background = 'var(--color-obj-bg)';
+            statusEl.style.color = 'var(--color-brand-accent)';
+            statusEl.style.borderColor = 'var(--color-obj-border)';
+          } else {
+            statusEl.textContent = 'Not started';
+            statusEl.style.background = 'var(--color-bg)';
+            statusEl.style.color = 'var(--color-text-secondary)';
+            statusEl.style.borderColor = 'var(--color-border)';
+          }
+        }
+      });
+    };
+
+    updateUI();
+    window.addEventListener('aerolearn:progress-updated', updateUI);
+  </script>
+</Layout>

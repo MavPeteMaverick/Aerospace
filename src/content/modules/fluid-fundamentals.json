@@ -1,0 +1,9 @@
+{
+  "id": "fluid-fundamentals",
+  "moduleNumber": 1,
+  "title": "Fluid Mechanics & The Continuum",
+  "eyebrow": "Module 1 · Foundations of Fluid & Aerodynamic Motion",
+  "summary": "Understand the core principles that dictate how fluids behave under stress. From shear forces to the continuum hypothesis, lay the groundwork for aerospace aerodynamics.",
+  "description": "Before we can design wings or analyze shockwaves, we must understand the very nature of the medium we fly through. This module introduces the fundamental properties of fluids—density, pressure, and viscosity—and explains the mathematical frameworks we use to model their motion. You will learn when it's safe to treat air as a continuous fluid and when that assumption breaks down in high-altitude hypersonic flight.",
+  "order": 1
+}
